@@ -1,4 +1,3 @@
-from pip import main
 import speech_recognition as sr
 import pyttsx3
 import wikipedia
@@ -21,24 +20,34 @@ def listen():
         audio = r.listen(source)
     try:
         print("Recognizing...")
-        querry = r.recognize_sphinx(audio)
+        querry = r.recognize_google(audio)
         print("User Said : {} ".format(querry))
-    except Exception as e:
-        print(e)
+    except sr.UnknownValueError:
         print("Sorry could not understand audio")
+        return "None"
+    except sr.RequestError as e:
+        print("Could not request results from Google Speech Recognition service; {0}".format(e))
         return "None"
     
     return querry
 
 
 if __name__== "__main__":
-    speak("Hello, I am your stupid assistant Mehak, You can ask me anything But I don't think I can help because I am stupid")
+    speak("Hello, I am your assistant, how may I help you today?")
     while True:
         querry = listen().lower()
 
         if 'wikipedia' in querry:
             speak('searching wikipedia...')
             querry = querry.replace('wikipedia', "")
-            result = wikipedia.summary(querry, sentences = 2)
-            speak("According to wikipedia")
-            speak(result)
+            try:
+                result = wikipedia.summary(querry, sentences = 2)
+                speak("According to wikipedia")
+                speak(result)
+            except wikipedia.exceptions.DisambiguationError as e:
+                speak("Multiple pages were found. Please try again with a more specific query.")
+                print(e)
+            except wikipedia.exceptions.PageError as e:
+                speak("Sorry, no information was found. Please try again with a different query.")
+                print(e)
+
